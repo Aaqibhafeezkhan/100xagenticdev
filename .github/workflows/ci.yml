@@ -3,8 +3,14 @@ name: CI
 on:
   push:
     branches: [main]
+    paths: ['**.py', '**.sh', '100x', 'requirements.txt', 'config/**', 'scripts/**', 'pipeline/**', '.github/workflows/**']
   pull_request:
     branches: [main]
+    paths: ['**.py', '**.sh', '100x', 'requirements.txt', 'config/**', 'scripts/**', 'pipeline/**', '.github/workflows/**']
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -48,3 +54,5 @@ jobs:
         run: python3 -m py_compile pipeline/orchestrator.py && python3 -m py_compile pipeline/deepseek_client.py && python3 -m py_compile pipeline/runner.py && python3 -m py_compile pipeline/aggregator.py && python3 -m py_compile pipeline/task_templates.py
       - name: Dry run pipeline
         run: cd pipeline && python3 runner.py --preset market_scan --dry-run --agents 3
+      - name: Unit tests
+        run: cd pipeline && python3 -m unittest test_task_templates -v && python3 test_runner_args.py
